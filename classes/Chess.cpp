@@ -1,6 +1,8 @@
 #include "Chess.h"
 #include <limits>
 #include <cmath>
+#include <cctype>
+#include <string>
 
 Chess::Chess()
 {
@@ -36,6 +38,9 @@ Bit* Chess::PieceForPlayer(const int playerNumber, ChessPiece piece)
     bit->setOwner(getPlayerAt(playerNumber));
     bit->setSize(pieceSize, pieceSize);
 
+    bit->setGameTag((playerNumber == 0) ? (int)piece : (128 + (int)piece));
+
+
     return bit;
 }
 
@@ -61,6 +66,66 @@ void Chess::FENtoBoard(const std::string& fen) {
     // 3: castling availability (KQkq or -)
     // 4: en passant target square (in algebraic notation, or -)
     // 5: halfmove clock (number of halfmoves since the last capture or pawn advance)
+
+    std::string boardField = fen;
+    size_t spacePos = fen.find(' ');
+    if (spacePos != std::string::npos) {
+        boardField = fen.substr(0, spacePos);
+    }
+
+    // CHANGE: clear existing pieces so calling FENtoBoard multiple times works
+    _grid->forEachSquare([](ChessSquare* square, int x, int y) {
+        square->destroyBit();
+    });
+
+    int x = 0;
+    int y = 0; // FEN starts at rank 8 (top row)
+
+    // CHANGE: helper converts FEN letter -> ChessPiece enum
+    auto charToPiece = [](char c) -> ChessPiece {
+        switch (std::tolower((unsigned char)c)) {
+            case 'p': return Pawn;
+            case 'n': return Knight;
+            case 'b': return Bishop;
+            case 'r': return Rook;
+            case 'q': return Queen;
+            case 'k': return King;
+            default:  return Pawn;
+        }
+    };
+
+    for (size_t i = 0; i < boardField.size(); i++) {
+        char c = boardField[i];
+
+        if (c == '/') {
+            y++;
+            x = 0;
+            continue;
+        }
+
+        if (std::isdigit((unsigned char)c)) {
+            x += (c - '0');
+            continue;
+        }
+
+        // piece letter
+        if (x < 0 || x >= 8 || y < 0 || y >= 8) {
+            continue;
+        }
+
+        int playerNumber = std::isupper((unsigned char)c) ? 0 : 1;
+        ChessPiece piece = charToPiece(c);
+
+        // CHANGE: flip Y when placing pieces
+        // Your engine likely treats (0,0) as the BOTTOM-left, but FEN starts at the TOP (rank 8).
+        // So we map FEN row y to board row (7 - y).
+        ChessSquare* square = _grid->getSquare(x, y);  // CORRECT (no 7 - y)
+        if (square) {
+        square->setBit(PieceForPlayer(playerNumber, piece));
+    }
+
+        x++;
+    }
 }
 
 bool Chess::actionForEmptyHolder(BitHolder &holder)

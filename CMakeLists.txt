@@ -77,6 +77,7 @@ elseif(WINDOWS)
         d3d11.lib 
         d3dcompiler.lib 
         dxgi.lib 
+        dwmapi.lib
         user32.lib 
         gdi32.lib 
         winmm.lib

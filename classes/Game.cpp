@@ -1,4 +1,5 @@
 #include "Game.h"
+#include <cmath>
 #include "Bit.h"
 #include "BitHolder.h"
 #include "Turn.h"
@@ -316,7 +317,7 @@ void Game::mouseMoved(ImVec2 &location, Entity *entity)
 	{
 		// Get the mouse position, and see if we've moved 3 pixels since the mouseDown:
 		ImVec2 pos = location;
-		if (fabs(pos.x - _dragStartPos.x) >= 12 || fabs(pos.y - _dragStartPos.y) >= 12)
+		if (std::fabs(pos.x - _dragStartPos.x) >= 12 || std::fabs(pos.y - _dragStartPos.y) >= 12)
 			_dragMoved = true;
 
 		// Move the _dragBit (without animation -- it's unnecessary and slows down responsiveness):
