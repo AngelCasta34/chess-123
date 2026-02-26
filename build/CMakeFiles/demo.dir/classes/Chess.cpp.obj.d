@@ -253,6 +253,7 @@ CMakeFiles/demo.dir/classes/Chess.cpp.obj: \
  C:\CMPM123\chess-123\classes\Grid.h \
  C:\CMPM123\chess-123\classes\ChessSquare.h \
  C:/mingw64/include/c++/15.2.0/functional \
+ C:\CMPM123\chess-123\classes\Bitboard.h \
  C:/mingw64/include/c++/15.2.0/cmath \
  C:/mingw64/x86_64-w64-mingw32/include/math.h \
  C:/mingw64/include/c++/15.2.0/bits/specfun.h \

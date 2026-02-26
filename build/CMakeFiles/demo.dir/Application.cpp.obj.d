@@ -256,4 +256,5 @@ CMakeFiles/demo.dir/Application.cpp.obj: \
  C:/mingw64/include/c++/15.2.0/functional \
  C:\CMPM123\chess-123\classes/Checkers.h \
  C:\CMPM123\chess-123\classes/Othello.h \
- C:\CMPM123\chess-123\classes/Chess.h
+ C:\CMPM123\chess-123\classes/Chess.h \
+ C:\CMPM123\chess-123\classes/Bitboard.h

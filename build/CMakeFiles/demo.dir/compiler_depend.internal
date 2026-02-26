@@ -255,6 +255,7 @@ CMakeFiles/demo.dir/Application.cpp.obj
  C:/CMPM123/chess-123/Application.h
  C:/CMPM123/chess-123/classes/Bit.h
  C:/CMPM123/chess-123/classes/BitHolder.h
+ C:/CMPM123/chess-123/classes/Bitboard.h
  C:/CMPM123/chess-123/classes/Checkers.h
  C:/CMPM123/chess-123/classes/Chess.h
  C:/CMPM123/chess-123/classes/ChessSquare.h
@@ -931,6 +932,7 @@ CMakeFiles/demo.dir/classes/Chess.cpp.obj
  C:/mingw64/x86_64-w64-mingw32/include/wctype.h
  C:/CMPM123/chess-123/classes/Bit.h
  C:/CMPM123/chess-123/classes/BitHolder.h
+ C:/CMPM123/chess-123/classes/Bitboard.h
  C:/CMPM123/chess-123/classes/Chess.h
  C:/CMPM123/chess-123/classes/ChessSquare.h
  C:/CMPM123/chess-123/classes/Entity.h

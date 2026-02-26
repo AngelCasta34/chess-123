@@ -1,11 +1,14 @@
 #pragma once
 
 #include "Game.h"
+#include "Bitboard.h"
 #include "Grid.h"
+#include <vector>
+
 
 constexpr int pieceSize = 80;
 
-enum ChessPiece
+/*enum ChessPiece
 {
     NoPiece,
     Pawn,
@@ -15,6 +18,7 @@ enum ChessPiece
     Queen,
     King
 };
+*/
 
 class Chess : public Game
 {
@@ -45,5 +49,15 @@ private:
     void FENtoBoard(const std::string& fen);
     char pieceNotation(int x, int y) const;
 
+    bool _whiteToMove = true;
+    std::vector<BitMove> _legalMoves;
+
+    void regenerateLegalMoves();
+    int holderToIndex(BitHolder& h) const;
+    bool isWhiteBit(const Bit& bit) const;
+    ChessPiece bitToPiece(const Bit& bit) const;
+    bool isOccupied(int idx) const;
+    bool isOccupiedByWhite(int idx) const;
+    bool isOccupiedByBlack(int idx) const;
     Grid* _grid;
 };

@@ -254,6 +254,7 @@ CMakeFiles/demo.dir/Application.cpp.obj: C:/CMPM123/chess-123/Application.cpp \
   C:/CMPM123/chess-123/Application.h \
   C:/CMPM123/chess-123/classes/Bit.h \
   C:/CMPM123/chess-123/classes/BitHolder.h \
+  C:/CMPM123/chess-123/classes/Bitboard.h \
   C:/CMPM123/chess-123/classes/Checkers.h \
   C:/CMPM123/chess-123/classes/Chess.h \
   C:/CMPM123/chess-123/classes/ChessSquare.h \
@@ -926,6 +927,7 @@ CMakeFiles/demo.dir/classes/Chess.cpp.obj: C:/CMPM123/chess-123/classes/Chess.cp
   C:/mingw64/x86_64-w64-mingw32/include/wctype.h \
   C:/CMPM123/chess-123/classes/Bit.h \
   C:/CMPM123/chess-123/classes/BitHolder.h \
+  C:/CMPM123/chess-123/classes/Bitboard.h \
   C:/CMPM123/chess-123/classes/Chess.h \
   C:/CMPM123/chess-123/classes/ChessSquare.h \
   C:/CMPM123/chess-123/classes/Entity.h \
@@ -4743,11 +4745,11 @@ C:/mingw64/include/c++/15.2.0/bits/semaphore_base.h:
 
 C:/mingw64/include/c++/15.2.0/bits/shared_ptr.h:
 
+C:/mingw64/x86_64-w64-mingw32/include/pshpack4.h:
+
 C:/mingw64/include/c++/15.2.0/bits/shared_ptr_base.h:
 
 C:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/movdirintrin.h:
-
-C:/mingw64/x86_64-w64-mingw32/include/pshpack4.h:
 
 C:/mingw64/include/c++/15.2.0/bits/std_abs.h:
 
@@ -5200,6 +5202,8 @@ C:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/vaesintrin.h:
 C:/CMPM123/chess-123/classes/BitHolder.h:
 
 C:/CMPM123/chess-123/classes/Grid.cpp:
+
+C:/CMPM123/chess-123/classes/Bitboard.h:
 
 C:/CMPM123/chess-123/classes/Chess.h:
 
