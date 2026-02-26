@@ -211,7 +211,6 @@ void Chess::regenerateLegalMoves()
         //  PAWNS 
         if (piece == Pawn)
         {
-            // IMPORTANT: your board uses y=0 at the top (because FEN uses y++ as you go down)
             // White pawns start at y=6 and move toward y-1
             // Black pawns start at y=1 and move toward y+1
             int dir = _whiteToMove ? -8 : +8;
@@ -237,7 +236,7 @@ void Chess::regenerateLegalMoves()
                 }
             }
 
-            // pawn captures: diagonals only (and must be enemy)
+            // pawn captures, diagonals only 
             // white (dir=-8): captures to from-9 and from-7
             // black (dir=+8): captures to from+7 and from+9
             int capL = from + dir - 1;
@@ -335,7 +334,6 @@ bool Chess::canBitMoveFromTo(Bit &bit, BitHolder &src, BitHolder &dst)
     {
         if (m.from == from && m.to == to && m.piece == piece)
         {
-            // allow the engine to execute the move (including capture by replacement)
             regenerateLegalMoves();
             return true;
         }
