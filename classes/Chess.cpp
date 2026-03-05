@@ -170,18 +170,13 @@ bool Chess::isOccupiedByBlack(int idx) const
     return b && !isWhiteBit(*b);
 }
 
-// ------------------------------------------------------------
-// NEW: required method
-// ------------------------------------------------------------
 std::vector<BitMove> Chess::generateAllMoves()
 {
     regenerateLegalMoves();
     return _legalMoves;
 }
 
-// ------------------------------------------------------------
-// NEW: ray casting for rook/bishop/queen
-// ------------------------------------------------------------
+
 void Chess::addRayMoves(int fromX, int fromY, int dx, int dy, ChessPiece piece)
 {
     int x = fromX + dx;
@@ -232,12 +227,11 @@ void Chess::regenerateLegalMoves()
 
         ChessPiece piece = bitToPiece(*b);
 
-        // NOW includes all pieces except we still ignore special rules like castling, etc.
         if (piece == NoPiece) return;
 
         int from = y * 8 + x;
 
-        // ---------------- PAWNS ----------------
+        // PAWNS 
         if (piece == Pawn)
         {
             int dir = _whiteToMove ? -8 : +8;
@@ -280,7 +274,7 @@ void Chess::regenerateLegalMoves()
             }
         }
 
-        // ---------------- KNIGHTS ----------------
+        // KNIGHTS 
         if (piece == Knight)
         {
             const int dx[8] = { 1, 2,  2,  1, -1, -2, -2, -1 };
@@ -301,7 +295,7 @@ void Chess::regenerateLegalMoves()
             }
         }
 
-        // ---------------- KING ----------------
+        // KING 
         if (piece == King)
         {
             for (int oy = -1; oy <= 1; oy++)
@@ -324,7 +318,7 @@ void Chess::regenerateLegalMoves()
             }
         }
 
-        // ---------------- ROOK ----------------
+        // ROOK 
         if (piece == Rook)
         {
             addRayMoves(x, y,  1,  0, Rook);
@@ -333,7 +327,7 @@ void Chess::regenerateLegalMoves()
             addRayMoves(x, y,  0, -1, Rook);
         }
 
-        // ---------------- BISHOP ----------------
+        // BISHOP
         if (piece == Bishop)
         {
             addRayMoves(x, y,  1,  1, Bishop);
@@ -342,7 +336,7 @@ void Chess::regenerateLegalMoves()
             addRayMoves(x, y, -1, -1, Bishop);
         }
 
-        // ---------------- QUEEN ----------------
+        // QUEEN 
         if (piece == Queen)
         {
             // rook directions
@@ -370,7 +364,6 @@ bool Chess::canBitMoveFromTo(Bit &bit, BitHolder &src, BitHolder &dst)
 {
     ChessPiece piece = bitToPiece(bit);
 
-    // allow all standard pieces (still no castling/en-passant/promo logic)
     if (piece == NoPiece) return false;
 
     int from = holderToIndex(src);
