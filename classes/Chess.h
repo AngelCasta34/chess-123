@@ -43,6 +43,8 @@ public:
 
     Grid* getGrid() override { return _grid; }
 
+    std::vector<BitMove> generateAllMoves();
+
 private:
     Bit* PieceForPlayer(const int playerNumber, ChessPiece piece);
     Player* ownerAt(int x, int y) const;
@@ -53,6 +55,9 @@ private:
     std::vector<BitMove> _legalMoves;
 
     void regenerateLegalMoves();
+
+    void addRayMoves(int fromX, int fromY, int dx, int dy, ChessPiece piece);
+
     int holderToIndex(BitHolder& h) const;
     bool isWhiteBit(const Bit& bit) const;
     ChessPiece bitToPiece(const Bit& bit) const;

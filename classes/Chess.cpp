@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-
 Chess::Chess()
 {
     _grid = new Grid(8, 8);
@@ -33,7 +32,6 @@ Bit* Chess::PieceForPlayer(const int playerNumber, ChessPiece piece)
     const char* pieces[] = { "pawn.png", "knight.png", "bishop.png", "rook.png", "queen.png", "king.png" };
 
     Bit* bit = new Bit();
-    // should possibly be cached from player class?
     const char* pieceName = pieces[piece - 1];
     std::string spritePath = std::string("") + (playerNumber == 0 ? "w_" : "b_") + pieceName;
     bit->LoadTextureFromFile(spritePath.c_str());
@@ -41,8 +39,6 @@ Bit* Chess::PieceForPlayer(const int playerNumber, ChessPiece piece)
     bit->setSize(pieceSize, pieceSize);
 
     bit->setGameTag((playerNumber == 0) ? (int)piece : (128 + (int)piece));
-
-
     return bit;
 }
 
@@ -58,32 +54,21 @@ void Chess::setUpBoard()
     startGame();
 }
 
-void Chess::FENtoBoard(const std::string& fen) {
-    // convert a FEN string to a board
-    // FEN is a space delimited string with 6 fields
-    // 1: piece placement (from white's perspective)
-    // NOT PART OF THIS ASSIGNMENT BUT OTHER THINGS THAT CAN BE IN A FEN STRING
-    // ARE BELOW
-    // 2: active color (W or B)
-    // 3: castling availability (KQkq or -)
-    // 4: en passant target square (in algebraic notation, or -)
-    // 5: halfmove clock (number of halfmoves since the last capture or pawn advance)
-
+void Chess::FENtoBoard(const std::string& fen)
+{
     std::string boardField = fen;
     size_t spacePos = fen.find(' ');
     if (spacePos != std::string::npos) {
         boardField = fen.substr(0, spacePos);
     }
 
-    // CHANGE: clear existing pieces so calling FENtoBoard multiple times works
     _grid->forEachSquare([](ChessSquare* square, int x, int y) {
         square->destroyBit();
     });
 
     int x = 0;
-    int y = 0; // FEN starts at rank 8 (top row)
+    int y = 0;
 
-    // CHANGE: helper converts FEN letter -> ChessPiece enum
     auto charToPiece = [](char c) -> ChessPiece {
         switch (std::tolower((unsigned char)c)) {
             case 'p': return Pawn;
@@ -110,7 +95,6 @@ void Chess::FENtoBoard(const std::string& fen) {
             continue;
         }
 
-        // piece letter
         if (x < 0 || x >= 8 || y < 0 || y >= 8) {
             continue;
         }
@@ -118,16 +102,14 @@ void Chess::FENtoBoard(const std::string& fen) {
         int playerNumber = std::isupper((unsigned char)c) ? 0 : 1;
         ChessPiece piece = charToPiece(c);
 
-        // CHANGE: flip Y when placing pieces
-        // Your engine likely treats (0,0) as the BOTTOM-left, but FEN starts at the TOP (rank 8).
-        // So we map FEN row y to board row (7 - y).
-        ChessSquare* square = _grid->getSquare(x, y);  // CORRECT (no 7 - y)
+        ChessSquare* square = _grid->getSquare(x, y);
         if (square) {
-        square->setBit(PieceForPlayer(playerNumber, piece));
-    }
+            square->setBit(PieceForPlayer(playerNumber, piece));
+        }
 
         x++;
     }
+
     regenerateLegalMoves();
 }
 
@@ -138,14 +120,13 @@ bool Chess::actionForEmptyHolder(BitHolder &holder)
 
 bool Chess::isWhiteBit(const Bit& bit) const
 {
-    // white tags: 1..6, black tags: 128+1..6
     return (bit.gameTag() & 128) == 0;
 }
 
 ChessPiece Chess::bitToPiece(const Bit& bit) const
 {
     int tag = bit.gameTag();
-    int piece = tag & 127; // strip black bit
+    int piece = tag & 127;
     if (piece < 0 || piece > 6) return NoPiece;
     return (ChessPiece)piece;
 }
@@ -155,7 +136,7 @@ int Chess::holderToIndex(BitHolder& h) const
     int found = -1;
     _grid->forEachSquare([&](ChessSquare* sq, int x, int y) {
         if ((BitHolder*)sq == &h) {
-            found = y * 8 + x; // y=0 is top row in your current system
+            found = y * 8 + x;
         }
     });
     return found;
@@ -189,41 +170,85 @@ bool Chess::isOccupiedByBlack(int idx) const
     return b && !isWhiteBit(*b);
 }
 
+// ------------------------------------------------------------
+// NEW: required method
+// ------------------------------------------------------------
+std::vector<BitMove> Chess::generateAllMoves()
+{
+    regenerateLegalMoves();
+    return _legalMoves;
+}
+
+// ------------------------------------------------------------
+// NEW: ray casting for rook/bishop/queen
+// ------------------------------------------------------------
+void Chess::addRayMoves(int fromX, int fromY, int dx, int dy, ChessPiece piece)
+{
+    int x = fromX + dx;
+    int y = fromY + dy;
+
+    int from = fromY * 8 + fromX;
+
+    while (x >= 0 && x < 8 && y >= 0 && y < 8)
+    {
+        int to = y * 8 + x;
+
+        // friendly blocks immediately
+        if (_whiteToMove && isOccupiedByWhite(to)) return;
+        if (!_whiteToMove && isOccupiedByBlack(to)) return;
+
+        if (!isOccupied(to))
+        {
+            _legalMoves.push_back(BitMove(from, to, piece));
+        }
+        else
+        {
+            // enemy capture allowed, then stop
+            if (_whiteToMove && isOccupiedByBlack(to))
+                _legalMoves.push_back(BitMove(from, to, piece));
+            else if (!_whiteToMove && isOccupiedByWhite(to))
+                _legalMoves.push_back(BitMove(from, to, piece));
+
+            return;
+        }
+
+        x += dx;
+        y += dy;
+    }
+}
+
 void Chess::regenerateLegalMoves()
 {
     _legalMoves.clear();
 
     _whiteToMove = (getCurrentPlayer()->playerNumber() == 0);
 
-    // Build moves for the side to move by scanning the board
     _grid->forEachSquare([&](ChessSquare* sq, int x, int y) {
         Bit* b = sq->bit();
         if (!b) return;
 
         bool pieceIsWhite = isWhiteBit(*b);
-        if (pieceIsWhite != _whiteToMove) return; // enforce turn
+        if (pieceIsWhite != _whiteToMove) return;
 
         ChessPiece piece = bitToPiece(*b);
-        if (piece != Pawn && piece != Knight && piece != King) return;
+
+        // NOW includes all pieces except we still ignore special rules like castling, etc.
+        if (piece == NoPiece) return;
 
         int from = y * 8 + x;
 
-        //  PAWNS 
+        // ---------------- PAWNS ----------------
         if (piece == Pawn)
         {
-            // White pawns start at y=6 and move toward y-1
-            // Black pawns start at y=1 and move toward y+1
             int dir = _whiteToMove ? -8 : +8;
 
             int one = from + dir;
             if (one >= 0 && one < 64)
             {
-                // forward move must be empty
                 if (!isOccupied(one))
                 {
                     _legalMoves.push_back(BitMove(from, one, Pawn));
 
-                    // two forward from starting rank, only if intermediate was empty too
                     bool onStartRank = _whiteToMove ? (y == 6) : (y == 1);
                     if (onStartRank)
                     {
@@ -236,13 +261,9 @@ void Chess::regenerateLegalMoves()
                 }
             }
 
-            // pawn captures, diagonals only 
-            // white (dir=-8): captures to from-9 and from-7
-            // black (dir=+8): captures to from+7 and from+9
             int capL = from + dir - 1;
             int capR = from + dir + 1;
 
-            // prevent wrap around files
             bool canCapL = (x > 0);
             bool canCapR = (x < 7);
 
@@ -259,10 +280,9 @@ void Chess::regenerateLegalMoves()
             }
         }
 
-        //  KNIGHTS 
+        // ---------------- KNIGHTS ----------------
         if (piece == Knight)
         {
-            // use (dx,dy) so we never do wrap-around bugs
             const int dx[8] = { 1, 2,  2,  1, -1, -2, -2, -1 };
             const int dy[8] = { 2, 1, -1, -2, -2, -1,  1,  2 };
 
@@ -274,7 +294,6 @@ void Chess::regenerateLegalMoves()
 
                 int to = ny * 8 + nx;
 
-                // can't land on friendly
                 if (_whiteToMove && isOccupiedByWhite(to)) continue;
                 if (!_whiteToMove && isOccupiedByBlack(to)) continue;
 
@@ -282,7 +301,7 @@ void Chess::regenerateLegalMoves()
             }
         }
 
-        // KING 
+        // ---------------- KING ----------------
         if (piece == King)
         {
             for (int oy = -1; oy <= 1; oy++)
@@ -297,7 +316,6 @@ void Chess::regenerateLegalMoves()
 
                     int to = ny * 8 + nx;
 
-                    // can't land on friendly
                     if (_whiteToMove && isOccupiedByWhite(to)) continue;
                     if (!_whiteToMove && isOccupiedByBlack(to)) continue;
 
@@ -305,13 +323,45 @@ void Chess::regenerateLegalMoves()
                 }
             }
         }
+
+        // ---------------- ROOK ----------------
+        if (piece == Rook)
+        {
+            addRayMoves(x, y,  1,  0, Rook);
+            addRayMoves(x, y, -1,  0, Rook);
+            addRayMoves(x, y,  0,  1, Rook);
+            addRayMoves(x, y,  0, -1, Rook);
+        }
+
+        // ---------------- BISHOP ----------------
+        if (piece == Bishop)
+        {
+            addRayMoves(x, y,  1,  1, Bishop);
+            addRayMoves(x, y, -1,  1, Bishop);
+            addRayMoves(x, y,  1, -1, Bishop);
+            addRayMoves(x, y, -1, -1, Bishop);
+        }
+
+        // ---------------- QUEEN ----------------
+        if (piece == Queen)
+        {
+            // rook directions
+            addRayMoves(x, y,  1,  0, Queen);
+            addRayMoves(x, y, -1,  0, Queen);
+            addRayMoves(x, y,  0,  1, Queen);
+            addRayMoves(x, y,  0, -1, Queen);
+
+            // bishop directions
+            addRayMoves(x, y,  1,  1, Queen);
+            addRayMoves(x, y, -1,  1, Queen);
+            addRayMoves(x, y,  1, -1, Queen);
+            addRayMoves(x, y, -1, -1, Queen);
+        }
     });
 }
 
-
 bool Chess::canBitMoveFrom(Bit &bit, BitHolder &src)
 {
-    // use our turn flag, not a gameTag hack
     bool pieceIsWhite = isWhiteBit(bit);
     return pieceIsWhite == _whiteToMove;
 }
@@ -320,21 +370,21 @@ bool Chess::canBitMoveFromTo(Bit &bit, BitHolder &src, BitHolder &dst)
 {
     ChessPiece piece = bitToPiece(bit);
 
-    // only pawn/knight/king for this assignment
-    if (piece != Pawn && piece != Knight && piece != King) return false;
+    // allow all standard pieces (still no castling/en-passant/promo logic)
+    if (piece == NoPiece) return false;
 
     int from = holderToIndex(src);
     int to   = holderToIndex(dst);
     if (from < 0 || to < 0) return false;
 
-    // ensure moves list is current
     regenerateLegalMoves();
 
     for (const BitMove& m : _legalMoves)
     {
         if (m.from == from && m.to == to && m.piece == piece)
         {
-            regenerateLegalMoves();
+            // let engine execute move + capture by replacement
+            // DO NOT force-turn swap here, engine will do it.
             return true;
         }
     }
@@ -385,7 +435,8 @@ std::string Chess::stateString()
             s += pieceNotation( x, y );
         }
     );
-    return s;}
+    return s;
+}
 
 void Chess::setStateString(const std::string &s)
 {
